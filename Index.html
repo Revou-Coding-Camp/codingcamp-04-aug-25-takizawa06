@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/style.css" />
+
+    <!-- Tailwind & Daisy UI -->
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@2.18.0/dist/full.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2/dist/tailwind.min.css" rel="stylesheet" />
+    <link href="https://unpkg.com/boxicons@2.1.2/css/boxicons.min.css" rel="stylesheet" />
+
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="res/favicon.ico" />
+
+    <title>To Do List App</title>
+</head>
+<body>
+    <div class="container">
+        <div class="todo-app">
+            <h1 class="text-center text-4xl font-bold mb-2">Welcome Back!</h1>
+            <h2 class="text-center text-xl font-bold text-blue-500 mb-6">Boost your productivity :] </h2>
+            
+            <!-- Weather Widget -->
+            <div class="flex justify-end mb-3">
+                <div id="weather-widget" class="bg-blue-100 rounded px-3 py-2 text-sm flex items-center gap-2">
+                    <i class="bx bx-cloud"></i>
+                    <span id="weather-info">Loading weather...</span>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <header>
+                <div class="w-full bg-gray-200 h-3 mb-4">
+                    <div class="progress-bar bg-primary h-3 transition-all duration-500" style="width: 0%"></div>
+                </div>
+                <div class="stats stats-horizontal shadow w-full flex mb-5">
+                    <div class="stat">
+                        <div class="stat-figure text-secondary">
+                            <i class="bx bx-task text-2xl"></i>
+                        </div>
+                        <div class="stat-title">Total Tasks</div>
+                        <div class="stat-value text-secondary total-counter">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-figure text-success">
+                            <i class="bx bx-check-circle text-2xl"></i>
+                        </div>
+                        <div class="stat-title">Completed</div>
+                        <div class="stat-value text-success completed-counter">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-figure text-warning">
+                            <i class="bx bx-time text-2xl"></i>
+                        </div>
+                        <div class="stat-title">In process</div>
+                        <div class="stat-value text-warning pending-counter">0</div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Add Task, Import, Export -->
+            <div class="flex gap-3 mb-6 justify-end">
+                <label for="my-modal" class="btn btn-primary">New Task <i class="bx bx-plus bx-sm"></i></label>
+                <button class="btn btn-outline btn-sm" onclick="todoApp?.uiManager?.importTasks()">
+                    <i class="bx bx-import"></i> Import
+                </button>
+                <button class="btn btn-outline btn-sm" onclick="todoApp?.uiManager?.exportTasks()">
+                    <i class="bx bx-export"></i> Export
+                </button>
+            </div>
+
+            <!-- Search, Filter, Calendar -->
+            <div class="flex flex-wrap gap-4 mb-4">
+                <div class="flex-1">
+                    <div class="relative">
+                        <input type="text" placeholder="Search tasks..." class="input input-bordered w-full pl-10 search-input" />
+                        <i class="bx bx-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    </div>
+                </div>
+                <div class="dropdown dropdown-end">
+                    <label tabindex="0" class="btn btn-outline">
+                        <i class="bx bx-filter mr-2"></i> Filter
+                    </label>
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                        <li><a data-filter="all">All Tasks</a></li>
+                        <li><a data-filter="pending">Pending</a></li>
+                        <li><a data-filter="completed">Completed</a></li>
+                        <li><a data-filter="overdue">Overdue</a></li>
+                        <li><a data-filter="today">Due Today</a></li>
+                    </ul>
+                </div>
+                <button class="btn btn-info btn-sm" onclick="todoApp?.uiManager?.showCalendar()">
+                    <i class="bx bx-calendar"></i> Calendar
+                </button>
+            </div>
+
+            <!-- Priority Sorting & Delete All -->
+            <div class="flex gap-2 mb-2">
+                <div class="dropdown">
+                    <label tabindex="0" class="btn btn-ghost btn-sm">
+                        <i class="bx bx-sort mr-1"></i> Sort
+                    </label>
+                    <ul tabindex="0" class="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-52">
+                        <li><a onclick="todoApp?.uiManager?.handleSort('priority')">Priority</a></li>
+                        <li><a onclick="todoApp?.uiManager?.handleSort('duedate')">Due Date</a></li>
+                        <li><a onclick="todoApp?.uiManager?.handleSort('status')">Status</a></li>
+                    </ul>
+                </div>
+                <button class="btn btn-error btn-sm delete-all-btn">
+                    <i class="bx bx-trash mr-2"></i> Delete All
+                </button>
+            </div>
+
+            <!-- Task Table -->
+            <div class="table-container overflow-x-auto">
+                <table class="table table-zebra w-full">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Due Date</th>
+                            <th>Priority</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="todos-list-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Add/Edit Task Modal -->
+        <input type="checkbox" id="my-modal" class="modal-toggle" />
+        <div class="modal">
+            <div class="modal-box">
+                <div class="alert-message"></div>
+                <h3 class="font-bold text-2xl mb-6">Add/Edit your task</h3>
+                <input type="text" placeholder="Task description..." class="input input-bordered input-primary w-full todo mb-3" />
+                <input type="date" class="input input-bordered input-primary w-full schedule-date mb-3" />
+                <select class="input input-bordered input-primary w-full priority-select mb-3">
+                    <option value="">Priority</option>
+                    <option value="high">Very important</option>
+                    <option value="medium">A bit important</option>
+                    <option value="low">Not in a hurry</option>
+                </select>
+                <div class="flex justify-between modal-action">
+                    <label for="my-modal" class="btn">Close</label>
+                    <button class="btn btn-secondary add-task-button">
+                        <i class="bx bx-save bx-sm"></i> Save
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Calendar Modal -->
+        <div id="calendar-modal" class="modal">
+            <div class="modal-box">
+                <h3 class="font-bold text-lg mb-3">Task Calendar</h3>
+                <div id="calendar-container" class="mb-4"></div>
+                <div class="modal-action">
+                    <button class="btn" onclick="todoApp?.uiManager?.closeCalendar()">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JS -->
+    <script src="js/script.js"></script>
+    <script>
+        // Example Weather API call (use your own API key)
+        fetch('https://wttr.in/?format=%C+%t')
+            .then(res => res.text())
+            .then(data => {
+                document.getElementById('weather-info').textContent = data;
+            });
+    </script>
+</body>
+</html>
